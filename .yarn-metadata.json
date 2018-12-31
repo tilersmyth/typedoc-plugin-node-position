@@ -1,0 +1,37 @@
+{
+  "manifest": {
+    "name": "typedoc-plugin-line-numbers",
+    "version": "0.0.1",
+    "description": "",
+    "main": "dist/index.js",
+    "files": [
+      "dist/"
+    ],
+    "scripts": {
+      "build": "rimraf ./dist && tsc"
+    },
+    "keywords": [
+      "typedocplugin"
+    ],
+    "author": {
+      "name": "Tyler Smith",
+      "email": "tilersmyth@gmail.com"
+    },
+    "license": "ISC",
+    "devDependencies": {
+      "rimraf": "^2.6.2"
+    },
+    "dependencies": {},
+    "_registry": "npm",
+    "_loc": "/Users/tylersmith/Library/Caches/Yarn/v1/npm-typedoc-plugin-line-numbers-0.0.1-3b5848f9-41d2-46e4-807d-63a7ac82bdc3-1546203896232/package.json"
+  },
+  "artifacts": [],
+  "remote": {
+    "type": "copy",
+    "registry": "npm",
+    "hash": "3b5848f9-41d2-46e4-807d-63a7ac82bdc3-1546203896232",
+    "reference": "/Users/tylersmith/.nvm/versions/node/v8.9.4/lib/node_modules/typedoc-plugin-line-numbers"
+  },
+  "registry": "npm",
+  "hash": "3b5848f9-41d2-46e4-807d-63a7ac82bdc3-1546203896232"
+}

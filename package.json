@@ -1,0 +1,23 @@
+{
+  "name": "typedoc-plugin-node-position",
+  "version": "0.0.1",
+  "description": "TypeDoc plugin that adds node position detail",
+  "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "rimraf ./dist && tsc"
+  },
+  "keywords": [
+    "typedocplugin"
+  ],
+  "author": "Tyler Smith <tilersmyth@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "rimraf": "^2.6.2"
+  },
+  "dependencies": {
+    "typedoc": "^0.13.0"
+  }
+}
