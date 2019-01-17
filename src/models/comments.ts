@@ -1,5 +1,5 @@
 import { Comment } from "typedoc/dist/lib/models";
-import { Position } from "./position";
+import { Position } from "./Position";
 
 export class CommentPosition extends Comment {
   shortText: string;

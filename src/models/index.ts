@@ -1,2 +1,5 @@
-export { NodePosition } from "./nodes";
-export { CommentPosition } from "./comments";
+export { Position } from "./Position";
+export { NodePosition } from "./Nodes";
+export { CommentPosition } from "./Comments";
+
+export * from "./types/index";

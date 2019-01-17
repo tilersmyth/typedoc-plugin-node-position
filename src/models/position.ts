@@ -1,4 +1,6 @@
 export interface Position {
-  line: number;
-  size: number;
+  startLine: number;
+  startCol: number;
+  endLine: number;
+  endCol: number;
 }

@@ -1,2 +1,3 @@
-export { NodePositionPluginSerializer } from "./nodes";
-export { CommentPositionPluginSerializer } from "./comments";
+export { NodePositionPluginSerializer } from "./Nodes";
+export { CommentPositionPluginSerializer } from "./Comments";
+export { TypePositionPluginSerializer } from "./Types";

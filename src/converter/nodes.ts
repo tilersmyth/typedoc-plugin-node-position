@@ -1,48 +1,44 @@
-import * as ts from "typescript";
 import {
   Component,
   ConverterComponent
 } from "typedoc/dist/lib/converter/components";
 import { Converter, Context } from "typedoc/dist/lib/converter";
 
-import * as _ts from "../ts-internal";
-import { NodePosition } from "../models";
+import {
+  NodePosition,
+  PositionDeclarationReflection,
+  Position
+} from "../models";
+
+import { NodePositionFindTypes, NodePositionAssignTypes } from "./types";
+import { ConverterNodePosition } from "./Position";
 
 @Component({ name: "node-position" })
 export class NodePositionPlugin extends ConverterComponent {
-  commentStart: number = 0;
-
   initialize() {
     this.listenTo(this.owner, {
       [Converter.EVENT_CREATE_DECLARATION]: this.onDeclaration,
       [Converter.EVENT_CREATE_SIGNATURE]: this.onDeclaration,
-      [Converter.EVENT_CREATE_PARAMETER]: this.onDeclaration
+      [Converter.EVENT_CREATE_PARAMETER]: this.onDeclaration,
+      [Converter.EVENT_RESOLVE]: this.onResolve
     });
   }
 
-  private position(sourceFile: ts.SourceFile, nodePos: any): number {
-    const position: ts.LineAndCharacter = ts.getLineAndCharacterOfPosition(
-      sourceFile,
-      nodePos
-    );
-    return position.line + 1;
-  }
+  private comments(node: any): Position | null {
+    const position = new ConverterNodePosition(node);
 
-  private comments(
-    sourceFile: ts.SourceFile,
-    node: any
-  ): { line: number; size: number } | null {
-    const comment = _ts.getJSDocCommentRanges(node, sourceFile.text);
-
-    if (!comment || comment.length === 0) {
+    if (!position.comment() || position.comment().length === 0) {
       return null;
     }
 
-    const { pos, end } = comment[0];
-    const commentStart = this.position(sourceFile, pos);
-    const commentEnd = this.position(sourceFile, end);
+    const { pos, end } = position.comment()[0];
+    const commentPosition = position.lineAndCharacter(pos, end);
 
-    return { line: commentStart, size: commentEnd + 1 - commentStart };
+    return commentPosition;
+  }
+
+  private onResolve(_: Context, reflection: PositionDeclarationReflection) {
+    new NodePositionAssignTypes(reflection).assign();
   }
 
   private onDeclaration(_: Context, reflection: NodePosition, node?: any) {
@@ -50,27 +46,19 @@ export class NodePositionPlugin extends ConverterComponent {
       return;
     }
 
-    const sourceFile = _ts.getSourceFileOfNode(node);
-
-    const comments = this.comments(sourceFile, node);
-
-    let commentStart: number = 0;
-
+    const comments = this.comments(node);
     if (comments && reflection.comment) {
-      commentStart = comments.line;
       reflection.comment.position = comments;
     }
 
-    const nodeStart = this.position(
-      sourceFile,
-      node["name"] && node["name"].end ? node["name"].end : node.pos
+    // HANDLE TYPES
+    new NodePositionFindTypes(reflection, node).find();
+
+    const position = new ConverterNodePosition(node).lineAndCharacter(
+      node["name"] && node["name"].pos ? node["name"].pos : node.pos,
+      node["name"] && node["name"].end ? node["name"].end : node.end
     );
 
-    const nodeEnd = this.position(sourceFile, node.end);
-
-    reflection.position = {
-      line: commentStart > 0 ? commentStart : nodeStart,
-      size: nodeEnd - nodeStart
-    };
+    reflection.position = position;
   }
 }

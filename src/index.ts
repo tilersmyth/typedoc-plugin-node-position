@@ -1,7 +1,8 @@
 import { NodePositionPlugin } from "./converter";
 import {
   NodePositionPluginSerializer,
-  CommentPositionPluginSerializer
+  CommentPositionPluginSerializer,
+  TypePositionPluginSerializer
 } from "./serialization";
 
 module.exports = function(PluginHost: any) {
@@ -17,5 +18,10 @@ module.exports = function(PluginHost: any) {
   app.serializer.addComponent(
     "serializer:comment-position",
     CommentPositionPluginSerializer
+  );
+
+  app.serializer.addComponent(
+    "serializer:type-position",
+    TypePositionPluginSerializer
   );
 };
