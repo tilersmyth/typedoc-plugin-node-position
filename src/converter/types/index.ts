@@ -1,2 +1,2 @@
-export { NodePositionAssignTypes } from "./AssignTypes";
+export { NodePositionResolveTypes } from "./ResolveTypes";
 export { NodePositionFindTypes } from "./FindTypes";

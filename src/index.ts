@@ -1,3 +1,5 @@
+import { ParameterType } from "typedoc/dist/lib/utils/options/declaration";
+
 import { NodePositionPlugin } from "./converter";
 import {
   NodePositionPluginSerializer,
@@ -7,6 +9,14 @@ import {
 
 module.exports = function(PluginHost: any) {
   const app = PluginHost.owner;
+
+  app.options.addDeclaration({
+    component: "files",
+    help:
+      "Node Position Plugin: Specify files that require node position detail",
+    name: "npFiles",
+    type: ParameterType.Array
+  });
 
   app.converter.addComponent("node-position", NodePositionPlugin);
 

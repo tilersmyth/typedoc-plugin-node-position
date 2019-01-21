@@ -3,6 +3,7 @@ import {
   ConverterComponent
 } from "typedoc/dist/lib/converter/components";
 import { Converter, Context } from "typedoc/dist/lib/converter";
+import { OptionsReadMode } from "typedoc/dist/lib/utils/options";
 
 import {
   NodePosition,
@@ -10,18 +11,42 @@ import {
   Position
 } from "../models";
 
-import { NodePositionFindTypes, NodePositionAssignTypes } from "./types";
+import { NodePositionFindTypes, NodePositionResolveTypes } from "./types";
 import { ConverterNodePosition } from "./Position";
 
 @Component({ name: "node-position" })
 export class NodePositionPlugin extends ConverterComponent {
+  files: string[] = [];
+  init: boolean = false;
+
   initialize() {
     this.listenTo(this.owner, {
+      [Converter.EVENT_BEGIN]: this.onBegin,
+      [Converter.EVENT_FILE_BEGIN]: this.onFileBegin,
       [Converter.EVENT_CREATE_DECLARATION]: this.onDeclaration,
       [Converter.EVENT_CREATE_SIGNATURE]: this.onDeclaration,
       [Converter.EVENT_CREATE_PARAMETER]: this.onDeclaration,
+      [Converter.EVENT_CREATE_TYPE_PARAMETER]: this.onTypeParameter,
       [Converter.EVENT_RESOLVE]: this.onResolve
     });
+  }
+
+  /**
+   * Triggered when the converter begins converting a project.
+   */
+  private onBegin() {
+    // store options
+    const options = this.application.options;
+    options.read({}, OptionsReadMode.Prefetch);
+    this.files = options.getValue("npFiles");
+  }
+
+  private onFileBegin(_: Context, __: any, file: any) {
+    const updateFile = this.files.findIndex(
+      (f: string) => file.fileName.indexOf(f) > -1
+    );
+
+    this.init = updateFile > -1 ? true : false;
   }
 
   private comments(node: any): Position | null {
@@ -38,11 +63,33 @@ export class NodePositionPlugin extends ConverterComponent {
   }
 
   private onResolve(_: Context, reflection: PositionDeclarationReflection) {
-    new NodePositionAssignTypes(reflection).assign();
+    new NodePositionResolveTypes(reflection).assign();
+  }
+
+  private onTypeParameter(_: Context, reflection: NodePosition, node?: any) {
+    if (!node || !this.init) {
+      return;
+    }
+
+    // hack fix for now - Not sure why key is "constraint" on node,
+    // while "type" on reflection
+    // seems to only occur on typeParameter
+    if (node.constraint) {
+      node["type"] = node.constraint;
+    }
+
+    new NodePositionFindTypes(reflection, node).run();
+
+    const position = new ConverterNodePosition(node).lineAndCharacter(
+      node["name"] && node["name"].pos ? node["name"].pos : node.pos,
+      node["name"] && node["name"].end ? node["name"].end : node.end
+    );
+
+    reflection.position = position;
   }
 
   private onDeclaration(_: Context, reflection: NodePosition, node?: any) {
-    if (!node) {
+    if (!node || !this.init) {
       return;
     }
 
@@ -52,7 +99,7 @@ export class NodePositionPlugin extends ConverterComponent {
     }
 
     // HANDLE TYPES
-    new NodePositionFindTypes(reflection, node).find();
+    new NodePositionFindTypes(reflection, node).run();
 
     const position = new ConverterNodePosition(node).lineAndCharacter(
       node["name"] && node["name"].pos ? node["name"].pos : node.pos,
