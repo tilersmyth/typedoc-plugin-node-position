@@ -14,10 +14,10 @@ export class NodePositionFindTypes {
   private append(reflection: any, node: any, prop): void {
     const position = new ConverterNodePosition(node);
 
-    if (node instanceof Array) {
+    if (node[prop] instanceof Array) {
       reflection[prop] = [];
       for (let i = 0; i < node[prop].length; i++) {
-        reflection[prop][i].push({
+        reflection[prop].push({
           position: position.lineAndCharacter(
             node[prop][i].pos,
             node[prop][i].end

@@ -14,6 +14,27 @@ export class ConverterNodePosition {
     return _ts.getSourceFileOfNode(this.node);
   }
 
+  private linePos(pos: any) {
+    const fullText = this.sourceFile().getFullText();
+    const textArr = fullText.split("\n");
+    const lineText = textArr[pos.line];
+
+    if (lineText.length > pos.character) {
+      return {
+        startLine: pos.line + 1,
+        startCol: pos.character
+      };
+    }
+
+    const nextLine = textArr[pos.line + 1];
+    const firstChar = nextLine.search(/\S/) + 1;
+
+    return {
+      startLine: pos.line + 2,
+      startCol: firstChar
+    };
+  }
+
   public lineAndCharacter(nodePos: number, nodeEnd: number): Position {
     const pos: ts.LineAndCharacter = ts.getLineAndCharacterOfPosition(
       this.sourceFile(),
@@ -26,8 +47,7 @@ export class ConverterNodePosition {
     );
 
     return {
-      startLine: pos.line + 1,
-      startCol: pos.character + 1,
+      ...this.linePos(pos),
       endLine: end.line + 1,
       endCol: end.character + 1
     };
