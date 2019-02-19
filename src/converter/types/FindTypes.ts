@@ -11,12 +11,11 @@ export class NodePositionFindTypes {
     this.node = node;
   }
 
-  private append(reflection: any, node: any, prop): void {
-    const position = new ConverterNodePosition(node);
-
+  private append(reflection: any, node: any, prop: any): void {
     if (node[prop] instanceof Array) {
       reflection[prop] = [];
       for (let i = 0; i < node[prop].length; i++) {
+        const position = new ConverterNodePosition(node[prop][i]);
         reflection[prop].push({
           position: position.lineAndCharacter(
             node[prop][i].pos,
@@ -28,6 +27,8 @@ export class NodePositionFindTypes {
       }
       return;
     }
+
+    const position = new ConverterNodePosition(node[prop]);
 
     reflection[prop] = {};
     reflection[prop].position = position.lineAndCharacter(

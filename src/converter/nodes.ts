@@ -59,6 +59,12 @@ export class NodePositionPlugin extends ConverterComponent {
     const { pos, end } = position.comment()[0];
     const commentPosition = position.lineAndCharacter(pos, end);
 
+    // Quick fix for comment position
+    // For comments, node start and end is module so comments
+    // become catchall when looking for positions
+    commentPosition.nodeStart = commentPosition.lineStart!;
+    commentPosition.nodeEnd = commentPosition.lineEnd!;
+
     return commentPosition;
   }
 
@@ -81,8 +87,8 @@ export class NodePositionPlugin extends ConverterComponent {
     new NodePositionFindTypes(reflection, node).run();
 
     const position = new ConverterNodePosition(node).lineAndCharacter(
-      node["name"] && node["name"].pos ? node["name"].pos : node.pos,
-      node["name"] && node["name"].end ? node["name"].end : node.end
+      node["name"] && node["name"].pos,
+      node["name"] && node["name"].end
     );
 
     reflection.position = position;
@@ -102,9 +108,13 @@ export class NodePositionPlugin extends ConverterComponent {
     new NodePositionFindTypes(reflection, node).run();
 
     const position = new ConverterNodePosition(node).lineAndCharacter(
-      node["name"] && node["name"].pos ? node["name"].pos : node.pos,
-      node["name"] && node["name"].end ? node["name"].end : node.end
+      node["name"] && node["name"].pos,
+      node["name"] && node["name"].end
     );
+
+    if (position.lineStart === 213) {
+      console.log(node);
+    }
 
     reflection.position = position;
   }

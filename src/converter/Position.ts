@@ -10,50 +10,80 @@ export class ConverterNodePosition {
     this.node = node;
   }
 
-  private sourceFile() {
+  private get sourceFile() {
     return _ts.getSourceFileOfNode(this.node);
   }
 
-  private linePos(pos: any) {
-    const fullText = this.sourceFile().getFullText();
-    const textArr = fullText.split("\n");
-    const lineText = textArr[pos.line];
+  private get fileTextArray() {
+    const textString = this.sourceFile.getFullText();
+    return textString.split("\n");
+  }
 
-    if (lineText.length > pos.character) {
+  private linePos(pos: any) {
+    if (!pos) {
       return {
-        startLine: pos.line + 1,
-        startCol: pos.character
+        lineStart: null,
+        colStart: null
       };
     }
 
-    const nextLine = textArr[pos.line + 1];
+    const lineText = this.fileTextArray[pos.line];
+
+    if (lineText.length > pos.character) {
+      return {
+        lineStart: pos.line + 1,
+        colStart: pos.character
+      };
+    }
+
+    const nextLine = this.fileTextArray[pos.line + 1];
     const firstChar = nextLine.search(/\S/) + 1;
 
     return {
-      startLine: pos.line + 2,
-      startCol: firstChar
+      lineStart: pos.line + 2,
+      colStart: firstChar
     };
   }
 
-  public lineAndCharacter(nodePos: number, nodeEnd: number): Position {
-    const pos: ts.LineAndCharacter = ts.getLineAndCharacterOfPosition(
-      this.sourceFile(),
-      nodePos
+  private nodePos(nodePos: any) {
+    const lineText = this.fileTextArray[nodePos.line];
+
+    if (lineText.length > nodePos.character) {
+      return { nodeStart: nodePos.line + 1 };
+    }
+
+    return { nodeStart: nodePos.line + 2 };
+  }
+
+  public lineAndCharacter(start?: number, end?: number): Position {
+    const nodeStart: ts.LineAndCharacter = ts.getLineAndCharacterOfPosition(
+      this.sourceFile,
+      this.node.pos
     );
 
-    const end: ts.LineAndCharacter = ts.getLineAndCharacterOfPosition(
-      this.sourceFile(),
-      nodeEnd
+    const nodeEnd: ts.LineAndCharacter = ts.getLineAndCharacterOfPosition(
+      this.sourceFile,
+      this.node.end
     );
+
+    const lineStart: ts.LineAndCharacter | null = start
+      ? ts.getLineAndCharacterOfPosition(this.sourceFile, start)
+      : null;
+
+    const lineEnd: ts.LineAndCharacter | null = end
+      ? ts.getLineAndCharacterOfPosition(this.sourceFile, end)
+      : null;
 
     return {
-      ...this.linePos(pos),
-      endLine: end.line + 1,
-      endCol: end.character + 1
+      ...this.nodePos(nodeStart),
+      nodeEnd: nodeEnd.line + 1,
+      ...this.linePos(lineStart),
+      lineEnd: lineEnd ? lineEnd.line + 1 : null,
+      colEnd: lineEnd ? lineEnd.character + 1 : null
     };
   }
 
   public comment() {
-    return _ts.getJSDocCommentRanges(this.node, this.sourceFile().text);
+    return _ts.getJSDocCommentRanges(this.node, this.sourceFile.text);
   }
 }
